@@ -1,17 +1,15 @@
 from geopy.distance import geodesic
 from geopy.geocoders import Nominatim, ArcGIS
 import csv
-import  datetime
+import datetime
 
 date = []
 addresses = []
 csv_path = "lite.csv"
+geolocator = ArcGIS()
 
 
 def csv_reader(file_obj):
-    """
-    Read a csv file
-    """
     reader = csv.DictReader(file_obj, delimiter=';')
     for row in reader:
         date.append(row['date'])
@@ -20,31 +18,28 @@ def csv_reader(file_obj):
 
 
 #geolocator = Nominatim(user_agent="my-app")
-geolocator = ArcGIS()
+
 
 
 def countDistance(point):
     with open(csv_path, "r") as file:
         dict = csv_reader(file)
-    location = geolocator.geocode(dict['address'][0])
+    location = geolocator.geocode(dict['address'])
+    print("LOCATIONN: %s" % location)
     smallest = geodesic(point, location).miles * 1.609344  # Перевод в километры
     Fails = []
-    sickQuantity = 0
 
     for obj in dict['address']:
         loc = geolocator.geocode(obj)
+        print(loc)
         if loc == None:
             Fails.append(obj)
         else:
             current = geodesic(point, (loc.latitude, loc.longitude)).miles * 1.609344  # Перевод в километры
-            if isIncludes(current):
-                sickQuantity += 1
             if current < smallest:
                 smallest = current
     return smallest
 
-def getTime():
-    return date
 
 def countTimeDiff(user):
     sickQuantity = 0
@@ -70,10 +65,11 @@ def countTimeDiff(user):
         dict = csv_reader(file)
     for obj in dict['address']:
         loc = geolocator.geocode(obj)
+        print(loc)
         if loc == None:
             Fails.append(obj)
         else:
-            current = geodesic((user.lt, user.lg), (loc.latitude, loc.longitude)).miles * 1.609344  # Перевод в километры
+            current = geodesic((user.lt, user.lg), (loc.latitude, loc.longitude)).miles * 1.609344 # Перевод в километры
             if isIncludes(current):
                 sickQuantity += 1
 

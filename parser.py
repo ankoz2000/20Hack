@@ -6,9 +6,6 @@ addresses = []
 
 
 def csv_reader(file_obj):
-    """
-    Read a csv file
-    """
     reader = csv.DictReader(file_obj, delimiter=';')
     for row in reader:
         #tmp = row;
