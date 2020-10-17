@@ -1,6 +1,7 @@
 from geopy.distance import geodesic
 from geopy.geocoders import Nominatim
 import csv
+import  datetime
 
 date = []
 addresses = []
@@ -33,10 +34,37 @@ def countDistance(point):
         loc = geolocator.geocode(obj)
         if loc == None:
             Fails.append(obj)
-            print(obj)
         else:
             current = geodesic(point, (loc.latitude, loc.longitude)).miles
             if current < smallest:
                 smallest = current
-                print(obj)
     return smallest
+
+def getTime():
+    return date
+
+def countTimeDiff(user):
+    now = datetime.datetime.today()
+    d = user.day
+    mo = user.month
+    y = user.year
+    h = user.h
+    mins = user.m
+    s = user.s
+
+    last = datetime.datetime(y, mo, d, h, mins, s)  # Время когда костыльный больной юзер
+                                                    # находился (находится) на территории
+
+    delta = now - last
+    hours = delta.seconds // 3600
+    minutes = delta.seconds % 3600 // 60
+    str = "{} дней {} часов {} минут".format(delta.days, hours, minutes)
+
+    return [delta, str]
+
+def countIllDist(health, ill):
+    dist = geodesic(health, ill).miles
+
+
+#def countTime():
+
