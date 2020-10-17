@@ -14,7 +14,6 @@ def csv_reader(file_obj):
         #tmp = row;
         date.append(row['date'])
         addresses.append(row['address'])
-        print(addresses)
     return {"date": date, "address": addresses}
 
 

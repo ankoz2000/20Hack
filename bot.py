@@ -2,7 +2,7 @@ import telebot
 import config
 import geopy
 from telebot import types
-from geopy.geocoders import Nominatim
+from geopy.geocoders import Nominatim, ArcGIS
 from analyze import countDistance, countTimeDiff, countIllDist
 from user import User, UserInSafety, UserVar
 import datetime
@@ -32,20 +32,23 @@ def geophone(message):
         bot.send_message(message.chat.id, s, reply_markup=keyboard)
 
     if message.text.lower().replace('!', '') == 'конечно':
+        bot.send_message(message.chat.id, "Собираю информацию...")
         illUser = User()
         healthUser = UserInSafety()
         varUser = UserVar(17, 18, 30)
         #[delta, dateString] = countTimeDiff(illUser)
-        [delta, dateString] = countTimeDiff(varUser)
+        [delta, dateString, sickQuantity] = countTimeDiff(varUser)
         mills = countIllDist((healthUser.lt, healthUser.lg), (illUser.lt, illUser.lg))
-        print(delta)
         s = "Последний раз заболевшие были рядом %s. " % dateString
+        quantity = "В радиусе 3 км от тебя %d заболевших" % sickQuantity
         diff = delta.total_seconds()
         print(diff)
         if diff <= 1800:  # 1800 секунд = 30 минут
-            s += "Тебе стоит покинуть это место, инфекция коварна. Не забудь маску!"
+            s += quantity + "Тебе стоит покинуть это место, инфекция коварна. Не забудь маску!"
+            s += "Сейчас в этом районе держится высокий коэффициент заражаемости: %d", 2.28705882352941
         if (diff >= 1800) & (diff <= 21600):
-            s += "Обязательно надень маску! Инфекция держится здесь длительное время, но здесь по прежнему не безопасно"
+            s += "Обязательно надень маску! Инфекция держится здесь длительное время, но здесь по прежнему не безопасно."
+            s += " На данный момент: " + quantity
         if diff > 21600:
             print("hello")
             s += "Это достаточно давно, поэтому не о чем волноваться"
@@ -55,14 +58,14 @@ def geophone(message):
 @bot.message_handler(content_types=['location'])
 def getLocation(message):
     Fails = []
-    flag = 1
     if message.location is not None:
-        geolocator = Nominatim(user_agent="my-app")
+        #geolocator = Nominatim(user_agent="my-app")
+        geolocator =ArcGIS()
         print(message.location)
         print("latitude: %s; longitude: %s" % (message.location.latitude, message.location.longitude))
         bot.send_message(message.chat.id, "Считаю дистанцию до ближайшего заболевшего...")
-        mills = countDistance((message.location.latitude, message.location.longitude))
-        distance = mills * 1.609344  # Перевод в километры
+        km = countDistance((message.location.latitude, message.location.longitude))
+        distance = km
         string = "Ближайший заболевший находится в %d километров от вас" % distance
         bot.send_message(message.chat.id, string)
 
