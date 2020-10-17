@@ -25,13 +25,11 @@ def countDistance(point):
     with open(csv_path, "r") as file:
         dict = csv_reader(file)
     location = geolocator.geocode(dict['address'])
-    print("LOCATIONN: %s" % location)
     smallest = geodesic(point, location).miles * 1.609344  # Перевод в километры
     Fails = []
 
     for obj in dict['address']:
         loc = geolocator.geocode(obj)
-        print(loc)
         if loc == None:
             Fails.append(obj)
         else:
@@ -65,7 +63,6 @@ def countTimeDiff(user):
         dict = csv_reader(file)
     for obj in dict['address']:
         loc = geolocator.geocode(obj)
-        print(loc)
         if loc == None:
             Fails.append(obj)
         else:

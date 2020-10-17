@@ -19,16 +19,39 @@ def txt_reader():
 bot = telebot.TeleBot(config.token)
 #covid19 = COVID19Py.COVID19()
 
-keyboard1 = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-keyboard3 = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-keyboard4 = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+btn_show         = types.KeyboardButton(text=S.COMMAND_SHOW)
+btn_sos          = types.KeyboardButton(text=S.COMMAND_SOS)
+btn_return       = types.KeyboardButton(text=S.GO_TO_MAIN_MENU)
+button_police    = types.InlineKeyboardButton(text="Полиция", url="https://ya.ru")
+button_emergency = types.InlineKeyboardButton(text="Скорая", url="https://ya.ru")
+button_fire      = types.InlineKeyboardButton(text="Противопожарная служба", url="https://ya.ru")
+button_geo       = types.KeyboardButton(text=S.SEND_LOCATION, request_location=True)
+btn_rules        = types.KeyboardButton(text=S.RULES)
+
+key          = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+keyboard1    = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+keyboard2    = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+keyboard3    = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+keyboard4    = types.InlineKeyboardMarkup()
+keyboard_geo = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+
+
+key.add(btn_show, btn_sos)
+
+keyboard_geo.add(button_geo)
+keyboard_geo.add(btn_return)
+
 keyboard1.row(S.YES, S.QUESTION_SAFETY)
 keyboard1.row(S.GO_TO_MAIN_MENU)
-key = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-btn_show = types.KeyboardButton(text=S.COMMAND_SHOW)
-btn_sos = types.KeyboardButton(text=S.COMMAND_SOS)
-btn_return = types.KeyboardButton(text=S.GO_TO_MAIN_MENU)
-key.add(btn_show, btn_sos)
+
+keyboard2.row(S.OF_COURSE, S.GO_TO_MAIN_MENU)
+
+keyboard3.add(btn_rules)
+keyboard3.add(btn_return)
+
+keyboard4.row(button_police, button_emergency)
+keyboard4.row(button_fire)
+
 
 
 @bot.message_handler(commands=['start'])
@@ -38,12 +61,6 @@ def start_message(message):
 
 @bot.message_handler(commands=['sos'])
 def safety(message):
-    keyboard4 = types.InlineKeyboardMarkup()
-    button1 = types.InlineKeyboardButton(text="Полиция", url="https://ya.ru")
-    button2 = types.InlineKeyboardButton(text="Скорая", url="https://ya.ru")
-    button3 = types.InlineKeyboardButton(text="Противопожарная служба", url="https://ya.ru")
-    keyboard4.row(button1, button2)
-    keyboard4.row(button3)
     bot.send_message(message.chat.id, "Список экстренных служб: ", reply_markup=keyboard4)
 
 
@@ -69,23 +86,18 @@ def show(message):
 @bot.message_handler(content_types=['text'])
 def geophone(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    button_geo = types.KeyboardButton(text=S.SEND_LOCATION, request_location=True)
     if message.text.lower() == 'да':
-        keyboard.add(button_geo)
-        keyboard.add(btn_return)
-        bot.send_message(message.chat.id, S.SHARE_LOCATION, reply_markup=keyboard)
+        bot.send_message(message.chat.id, S.SHARE_LOCATION, reply_markup=keyboard_geo)
 
     elif message.text.lower() == S.GO_TO_MAIN_MENU.lower():
         start_message(message)
 
     elif message.text.lower().replace('?', '') == S.QUESTION_SAFETY.lower().replace('?', ''):
-        keyboard.add(button_geo, btn_return)
         s = S.WHERE_IS_LOCATION
-        bot.send_message(message.chat.id, s, reply_markup=keyboard)
+        bot.send_message(message.chat.id, s, reply_markup=keyboard_geo)
 
     elif message.text.lower() == S.RULES.lower():
         s = txt_reader()
-        key.add(btn_show, btn_sos)
         bot.send_message(message.chat.id, s, reply_markup=key)
 
     elif message.text.lower().replace('!', '') == S.OF_COURSE.lower().replace('!', ''):
@@ -99,7 +111,7 @@ def geophone(message):
 
         mills = countIllDist((healthUser.lt, healthUser.lg), (illUser.lt, illUser.lg))
         s = "Последний раз заболевшие были рядом %s. " % dateString
-        quantity = "В радиусе 3 км от тебя %d заболевших" % sickQuantity
+        quantity = "В радиусе 3 км от Вас %d заболевших" % sickQuantity
         diff = delta.total_seconds()
         if diff <= 1800:  # 1800 секунд = 30 минут
             s += quantity + S.GO_AWAY
@@ -107,15 +119,12 @@ def geophone(message):
         if (diff >= 1800) & (diff <= 39600):
             s += S.TAKE_MASK
             s += S.AT_THAT_MOMENT + quantity
-            btn = types.KeyboardButton(text=S.RULES)
-            keyboard4.row(btn)
-            keyboard4.add(btn_return)
             s += S.CHECK_RULES
         if diff > 39600:
             s += S.DONT_WORRY
-        bot.send_message(message.chat.id, s, reply_markup=keyboard4)
+        bot.send_message(message.chat.id, s, reply_markup=keyboard3)
     else:
-        bot.send_message(message.chat.id, S.MISUNDERSTANDING, reply_markup=keyboard4)
+        bot.send_message(message.chat.id, S.MISUNDERSTANDING, reply_markup=key)
 
 
 @bot.message_handler(content_types=['location'])
@@ -125,12 +134,8 @@ def getLocation(message):
         bot.send_message(message.chat.id, S.COUNTING_DISTANCE)
         km = countDistance((message.location.latitude, message.location.longitude))
         distance = km
-        string = "Ближайший заболевший находится в %d километров от вас" % distance
+        string = "Ближайший заболевший находится в %d километров от Вас" % distance
         bot.send_message(message.chat.id, string)
-
-        keyboard2 = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-        keyboard2.row(S.OF_COURSE, S.GO_TO_MAIN_MENU)
-
         question = S.NEED_MORE_INFO
         bot.send_message(message.chat.id, question, reply_markup=keyboard2)
 
