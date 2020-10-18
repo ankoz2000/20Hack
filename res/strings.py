@@ -1,6 +1,6 @@
 RECOMENDATIONS      = './res/recomendations.txt'
 ILLNESS_REC         = './res/ilness_rec.txt'
-HOSPITALISATION_REC = './res/hospitalisation.txt'
+HOSPITALISATION_REC = './res/hospitalisation_rec.txt'
 QUESTION_SAFETY            = 'Я в безопасности?'
 YES                 = 'Да'
 COMMAND_SHOW        = '/show'
